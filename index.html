@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>World Cup Knockout Simulator</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.jpg">
+    <meta name="theme-color" content="#1a1a2e">
+    <style>
+        /* ----- Reset & Base ----- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        body.light {
+            background: #f0f0f0;
+            color: #222;
+        }
+
+        /* ----- Header & Footer ----- */
+        header,
+        footer {
+            padding: 1rem;
+            background: #16213e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        body.light header,
+        body.light footer {
+            background: #ddd;
+        }
+        header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        #theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #eee;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        body.light #theme-toggle {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.2);
+            color: #222;
+        }
+        #theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        body.light #theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        footer {
+            margin-top: auto;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+        body.light footer a {
+            color: #0277bd;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ----- Tournament ----- */
+        #tournament {
+            display: flex;
+            overflow-x: auto;
+            padding: 1rem;
+            gap: 1rem;
+            flex: 1;
+            align-items: flex-start;
+        }
+        .round {
+            flex: 0 0 200px;
+            min-width: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 0.6rem 0.4rem;
+        }
+        body.light .round {
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .round h2 {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.6rem 0;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        .match {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 0.5rem 0.4rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            transition: background 0.2s;
+        }
+        body.light .match {
+            background: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+        .team {
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            cursor: default;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .team:not(.winner):not(.loser):hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        body.light .team:not(.winner):not(.loser):hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .team.winner {
+            background: #ffd700;
+            color: #000;
+            font-weight: 700;
+            border-radius: 4px;
+            padding: 0.2rem 0.4rem;
+        }
+        .team.loser {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        .team.tbd {
+            opacity: 0.5;
+            font-style: italic;
+        }
+        .match-info {
+            font-size: 0.6rem;
+            text-align: center;
+            opacity: 0.6;
+            margin-top: 0.15rem;
+            letter-spacing: 0.2px;
+        }
+
+        /* ----- Responsive tweaks ----- */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.1rem;
+            }
+            .round {
+                flex: 0 0 170px;
+                min-width: 170px;
+            }
+            .team {
+                font-size: 0.75rem;
+            }
+            .match-info {
+                font-size: 0.55rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚽ World Cup 2026</h1>
+        <button id="theme-toggle">Light Mode</button>
+    </header>
+
+    <main id="tournament">
+        <!-- Dynamically generated -->
+    </main>
+
+    <footer>
+        <p>Contact us<br><a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a></p>
+    </footer>
+
+    <script>
+        // --------------------------------------------------------------
+        // 1. DATA – 32 teams with flag emojis (edit as you like)
+        // --------------------------------------------------------------
+        const TEAMS = [
+            { name: 'Argentina', flag: '🇦🇷' },
+            { name: 'Brazil', flag: '🇧🇷' },
+            { name: 'Uruguay', flag: '🇺🇾' },
+            { name: 'Ecuador', flag: '🇪🇨' },
+            { name: 'Colombia', flag: '🇨🇴' },
+            { name: 'United States', flag: '🇺🇸' },
+            { name: 'Canada', flag: '🇨🇦' },
+            { name: 'Mexico', flag: '🇲🇽' },
+            { name: 'France', flag: '🇫🇷' },
+            { name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+            { name: 'Spain', flag: '🇪🇸' },
+            { name: 'Germany', flag: '🇩🇪' },
+            { name: 'Portugal', flag: '🇵🇹' },
+            { name: 'Belgium', flag: '🇧🇪' },
+            { name: 'Netherlands', flag: '🇳🇱' },
+            { name: 'Croatia', flag: '🇭🇷' },
+            { name: 'Switzerland', flag: '🇨🇭' },
+            { name: 'Denmark', flag: '🇩🇰' },
+            { name: 'Sweden', flag: '🇸🇪' },
+            { name: 'Poland', flag: '🇵🇱' },
+            { name: 'Serbia', flag: '🇷🇸' },
+            { name: 'Japan', flag: '🇯🇵' },
+            { name: 'South Korea', flag: '🇰🇷' },
+            { name: 'Australia', flag: '🇦🇺' },
+            { name: 'Iran', flag: '🇮🇷' },
+            { name: 'Saudi Arabia', flag: '🇸🇦' },
+            { name: 'Nigeria', flag: '🇳🇬' },
+            { name: 'Senegal', flag: '🇸🇳' },
+            { name: 'Ghana', flag: '🇬🇭' },
+            { name: 'Cameroon', flag: '🇨🇲' },
+            { name: 'Morocco', flag: '🇲🇦' },
+            { name: 'Egypt', flag: '🇪🇬' }
+        ];
+
+        // --------------------------------------------------------------
+        // 2. STADIUMS & DATE HELPERS
+        // --------------------------------------------------------------
+        const STADIUMS = [
+            'MetLife Stadium', 'AT&T Stadium', 'SoFi Stadium', 'Estadio Azteca',
+            'Olympic Stadium (Montreal)', "Levi's Stadium", 'Arrowhead Stadium',
+            'NRG Stadium', 'Gillette Stadium', 'Mercedes-Benz Stadium',
+            'Hard Rock Stadium', 'Cotton Bowl', 'Lumen Field', 'M&T Bank Stadium',
+            'TQL Stadium', 'BMO Stadium'
+        ];
+
+        function getMatchDate(roundIdx, matchIdx) {
+            // roundIdx: 0=1/16, 1=1/8, 2=1/4, 3=semi, 4=final
+            const baseDate = new Date(2026, 5, 12); // June 12, 2026
+            const dayOffset = roundIdx * 2 + Math.floor(matchIdx / 4);
+            const d = new Date(baseDate);
+            d.setDate(d.getDate() + dayOffset);
+            const hours = (matchIdx % 4) * 3 + 15; // 15:00, 18:00, 21:00, 00:00
+            const hh = hours % 24;
+            const mm = (hours % 1 === 0) ? '00' : '30';
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(hh).padStart(2,'0')}:${mm}`;
+        }
+
+        function getStadium(roundIdx, matchIdx) {
+            const idx = (roundIdx * 7 + matchIdx * 3) % STADIUMS.length;
+            return STADIUMS[idx];
+        }
+
+        // --------------------------------------------------------------
+        // 3. TOURNAMENT STATE
+        // --------------------------------------------------------------
+        let tournament = null;
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initTournament() {
+            const shuffled = shuffle([...TEAMS]);
+            const rounds = [
+                { name: 'Round of 32', matches: [] }, // 1/16
+                { name: 'Round of 16', matches: [] }, // 1/8
+                { name: 'Quarter-finals', matches: [] },
+                { name: 'Semi-finals', matches: [] },
+                { name: 'Final', matches: [] }
+            ];
+
+            // Round 1 (1/16) – 16 matches
+            for (let i = 0; i < 16; i++) {
+                rounds[0].matches.push({
+                    id: `r1m${i}`,
+                    home: shuffled[i * 2],
+                    away: shuffled[i * 2 + 1],
+                    winner: null,
+                    date: getMatchDate(0, i),
+                    stadium: getStadium(0, i),
+                    roundIdx: 0,
+                    matchIdx: i
+                });
+            }
+
+            // Rounds 2–5 – empty matches
+            for (let r = 1; r < 5; r++) {
+                const numMatches = Math.floor(16 / Math.pow(2, r));
+                for (let i = 0; i < numMatches; i++) {
+                    rounds[r].matches.push({
+                        id: `r${r+1}m${i}`,
+                        home: null,
+                        away: null,
+                        winner: null,
+                        date: getMatchDate(r, i),
+                        stadium: getStadium(r, i),
+                        roundIdx: r,
+                        matchIdx: i
+                    });
+                }
+            }
+            return rounds;
+        }
+
+        // --------------------------------------------------------------
+        // 4. RENDER
+        // --------------------------------------------------------------
+        function renderTournament() {
+            const container = document.getElementById('tournament');
+            container.innerHTML = '';
+
+            tournament.forEach((round, rIdx) => {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'round';
+
+                const title = document.createElement('h2');
+                title.textContent = round.name;
+                roundDiv.appendChild(title);
+
+                round.matches.forEach((match, mIdx) => {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'match';
+
+                    // Home team
+                    const homeDiv = document.createElement('div');
+                    homeDiv.className = 'team home';
+                    if (match.home) {
+                        homeDiv.innerHTML = `${match.home.flag} ${match.home.name}`;
+                        if (match.winner === match.home) {
+                            homeDiv.classList.add('winner');
+                        } else if (match.winner) {
+                            homeDiv.classList.add('loser');
+                        }
+                        // Clickable only if match is ready and not decided
+                        if (!match.winner && match.home && match.away) {
+                            homeDiv.style.cursor = 'pointer';
+                            homeDiv.addEventListener('click', () => selectWinner(rIdx, mIdx, 'home'));
+                        }
+                    } else {
+                        homeDiv.textContent = 'TBD';
+                        homeDiv.classList.add('tbd');
+                    }
+
+                    // Away team
+                    const awayDiv = document.createElement('div');
+                    awayDiv.className = 'team away';
+                    if (match.away) {
+                        awayDiv.innerHTML = `${match.away.flag} ${match.away.name}`;
+                        if (match.winner === match.away) {
+                            awayDiv.classList.add('winner');
+                        } else if (match.winner) {
+                            awayDiv.classList.add('loser');
+                        }
+                        if (!match.winner && match.home && match.away) {
+                            awayDiv.style.cursor = 'pointer';
+                            awayDiv.addEventListener('click', () => selectWinner(rIdx, mIdx, 'away'));
+                        }
+                    } else {
+                        awayDiv.textContent = 'TBD';
+                        awayDiv.classList.add('tbd');
+                    }
+
+                    // Match info (date & stadium)
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'match-info';
+                    infoDiv.textContent = `${match.date} | ${match.stadium}`;
+
+                    matchDiv.appendChild(homeDiv);
+                    matchDiv.appendChild(awayDiv);
+                    matchDiv.appendChild(infoDiv);
+                    roundDiv.appendChild(matchDiv);
+                });
+
+                container.appendChild(roundDiv);
+            });
+        }
+
+        // --------------------------------------------------------------
+        // 5. SELECT WINNER
+        // --------------------------------------------------------------
+        function selectWinner(roundIdx, matchIdx, side) {
+            const match = tournament[roundIdx].matches[matchIdx];
+            if (match.winner) return; // already decided
+
+            const winner = side === 'home' ? match.home : match.away;
+            if (!winner) return;
+
+            match.winner = winner;
+
+            // Propagate to next round
+            if (roundIdx < 4) {
+                const nextRound = tournament[roundIdx + 1];
+                const nextMatchIdx = Math.floor(matchIdx / 2);
+                const nextMatch = nextRound.matches[nextMatchIdx];
+                if (matchIdx % 2 === 0) {
+                    nextMatch.home = winner;
+                } else {
+                    nextMatch.away = winner;
+                }
+            }
+
+            // Check if final is over
+            if (roundIdx === 4 && matchIdx === 0) {
+                // Final finished – show champion
+                setTimeout(() => {
+                    alert(`🏆 Champion: ${winner.flag} ${winner.name} 🏆`);
+                }, 100);
+            }
+
+            renderTournament();
+        }
+
+        // --------------------------------------------------------------
+        // 6. THEME TOGGLE
+        // --------------------------------------------------------------
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('light');
+            this.textContent = document.body.classList.contains('light') ? 'Dark Mode' : 'Light Mode';
+        });
+
+        // --------------------------------------------------------------
+        // 7. INIT & SERVICE WORKER REGISTRATION
+        // --------------------------------------------------------------
+        tournament = initTournament();
+        renderTournament();
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.warn('SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>
