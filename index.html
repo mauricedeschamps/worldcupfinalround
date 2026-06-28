@@ -48,7 +48,12 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        #theme-toggle {
+        .header-actions {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .header-actions button {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: #eee;
@@ -57,17 +62,29 @@
             cursor: pointer;
             font-size: 0.9rem;
             transition: background 0.2s;
+            white-space: nowrap;
         }
-        body.light #theme-toggle {
+        body.light .header-actions button {
             background: rgba(0, 0, 0, 0.08);
             border-color: rgba(0, 0, 0, 0.2);
             color: #222;
         }
-        #theme-toggle:hover {
+        .header-actions button:hover {
             background: rgba(255, 255, 255, 0.25);
         }
-        body.light #theme-toggle:hover {
+        body.light .header-actions button:hover {
             background: rgba(0, 0, 0, 0.15);
+        }
+        #reset-button {
+            border-color: #ff6b6b !important;
+            color: #ff6b6b !important;
+        }
+        body.light #reset-button {
+            border-color: #d63031 !important;
+            color: #d63031 !important;
+        }
+        #reset-button:hover {
+            background: rgba(255, 107, 107, 0.2) !important;
         }
 
         footer {
@@ -97,8 +114,8 @@
             align-items: flex-start;
         }
         .round {
-            flex: 0 0 200px;
-            min-width: 200px;
+            flex: 0 0 210px;
+            min-width: 210px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             padding: 0.6rem 0.4rem;
@@ -108,7 +125,7 @@
         }
         .round h2 {
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             margin: 0 0 0.6rem 0;
             letter-spacing: 0.3px;
@@ -136,7 +153,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: background 0.15s;
         }
         .team:not(.winner):not(.loser):hover {
@@ -161,28 +178,19 @@
             font-style: italic;
         }
         .match-info {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             text-align: center;
             opacity: 0.6;
             margin-top: 0.15rem;
             letter-spacing: 0.2px;
         }
 
-        /* ----- Responsive tweaks ----- */
         @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.1rem;
-            }
-            .round {
-                flex: 0 0 170px;
-                min-width: 170px;
-            }
-            .team {
-                font-size: 0.75rem;
-            }
-            .match-info {
-                font-size: 0.55rem;
-            }
+            header h1 { font-size: 1.1rem; }
+            .round { flex: 0 0 170px; min-width: 170px; }
+            .team { font-size: 0.7rem; }
+            .match-info { font-size: 0.5rem; }
+            .header-actions button { font-size: 0.75rem; padding: 0.3rem 0.7rem; }
         }
     </style>
 </head>
@@ -190,117 +198,101 @@
 
     <header>
         <h1>⚽ World Cup 2026</h1>
-        <button id="theme-toggle">Light Mode</button>
+        <div class="header-actions">
+            <button id="reset-button">🔄 Reset Bracket</button>
+            <button id="theme-toggle">Light Mode</button>
+        </div>
     </header>
 
-    <main id="tournament">
-        <!-- Dynamically generated -->
-    </main>
+    <main id="tournament"></main>
 
     <footer>
         <p>Contact us<br><a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a></p>
     </footer>
 
     <script>
-        // --------------------------------------------------------------
-        // 1. DATA – 32 qualified teams (based on actual Round of 32)
-        // --------------------------------------------------------------
+        // ================================================================
+        // 1. TEAM DATA (with flags)
+        // ================================================================
         const TEAMS = [
-            // Group A
-            { name: 'Mexico', flag: '🇲🇽' },
             { name: 'South Africa', flag: '🇿🇦' },
-            // Group B
-            { name: 'Switzerland', flag: '🇨🇭' },
             { name: 'Canada', flag: '🇨🇦' },
-            { name: 'Bosnia and Herzegovina', flag: '🇧🇦' },
-            // Group C
-            { name: 'Brazil', flag: '🇧🇷' },
-            { name: 'Morocco', flag: '🇲🇦' },
-            // Group D
-            { name: 'United States', flag: '🇺🇸' },
-            { name: 'Australia', flag: '🇦🇺' },
-            { name: 'Paraguay', flag: '🇵🇾' },
-            // Group E
             { name: 'Germany', flag: '🇩🇪' },
-            { name: 'Ivory Coast', flag: '🇨🇮' },
-            { name: 'Ecuador', flag: '🇪🇨' },
-            // Group F
+            { name: 'Paraguay', flag: '🇵🇾' },
             { name: 'Netherlands', flag: '🇳🇱' },
+            { name: 'Morocco', flag: '🇲🇦' },
+            { name: 'Brazil', flag: '🇧🇷' },
             { name: 'Japan', flag: '🇯🇵' },
-            { name: 'Sweden', flag: '🇸🇪' },
-            // Group G
-            { name: 'Belgium', flag: '🇧🇪' },
-            { name: 'Egypt', flag: '🇪🇬' },
-            // Group H
-            { name: 'Spain', flag: '🇪🇸' },
-            { name: 'Cape Verde', flag: '🇨🇻' },
-            // Group I
             { name: 'France', flag: '🇫🇷' },
+            { name: 'Sweden', flag: '🇸🇪' },
+            { name: 'Ivory Coast', flag: '🇨🇮' },
             { name: 'Norway', flag: '🇳🇴' },
-            { name: 'Senegal', flag: '🇸🇳' },
-            // Group J
-            { name: 'Argentina', flag: '🇦🇷' },
-            { name: 'Austria', flag: '🇦🇹' },
-            { name: 'Algeria', flag: '🇩🇿' },
-            // Group K
-            { name: 'Colombia', flag: '🇨🇴' },
-            { name: 'Portugal', flag: '🇵🇹' },
-            { name: 'DR Congo', flag: '🇨🇩' },
-            // Group L
+            { name: 'Mexico', flag: '🇲🇽' },
+            { name: 'Ecuador', flag: '🇪🇨' },
             { name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+            { name: 'DR Congo', flag: '🇨🇩' },
+            { name: 'USA', flag: '🇺🇸' },
+            { name: 'Bosnia and Herzegovina', flag: '🇧🇦' },
+            { name: 'Belgium', flag: '🇧🇪' },
+            { name: 'Senegal', flag: '🇸🇳' },
+            { name: 'Portugal', flag: '🇵🇹' },
             { name: 'Croatia', flag: '🇭🇷' },
-            { name: 'Ghana', flag: '🇬🇭' }
+            { name: 'Spain', flag: '🇪🇸' },
+            { name: 'Austria', flag: '🇦🇹' },
+            { name: 'Switzerland', flag: '🇨🇭' },
+            { name: 'Algeria', flag: '🇩🇿' },
+            { name: 'Argentina', flag: '🇦🇷' },
+            { name: 'Cape Verde', flag: '🇨🇻' },
+            { name: 'Colombia', flag: '🇨🇴' },
+            { name: 'Ghana', flag: '🇬🇭' },
+            { name: 'Australia', flag: '🇦🇺' },
+            { name: 'Egypt', flag: '🇪🇬' }
         ];
 
-        // --------------------------------------------------------------
-        // 2. ROUND OF 32 MATCHUPS (actual pairings)
-        // --------------------------------------------------------------
-        const R32_MATCHUPS = [
-            { home: 'South Africa', away: 'Canada' },
-            { home: 'Brazil', away: 'Japan' },
-            { home: 'Germany', away: 'Paraguay' },
-            { home: 'Netherlands', away: 'Morocco' },
-            { home: 'Ivory Coast', away: 'Norway' },
-            { home: 'France', away: 'Sweden' },
-            { home: 'Mexico', away: 'Ecuador' },
-            { home: 'England', away: 'DR Congo' },
-            { home: 'Belgium', away: 'Senegal' },
-            { home: 'United States', away: 'Bosnia and Herzegovina' },
-            { home: 'Spain', away: 'Austria' },
-            { home: 'Portugal', away: 'Croatia' },
-            { home: 'Switzerland', away: 'Algeria' },
-            { home: 'Australia', away: 'Egypt' },
-            { home: 'Argentina', away: 'Cape Verde' },
-            { home: 'Colombia', away: 'Ghana' }
+        function getTeam(name) {
+            return TEAMS.find(t => t.name === name);
+        }
+
+        // ================================================================
+        // 2. ROUND OF 32 – 16 matches (Match 73–88)
+        // ================================================================
+        const R32_DATA = [
+            { home: 'South Africa', away: 'Canada', date: 'Jun 28, 3:00 PM', stadium: 'SoFi Stadium, Los Angeles' },
+            { home: 'Germany', away: 'Paraguay', date: 'Jun 29, 4:30 PM', stadium: 'Gillette Stadium, Foxborough' },
+            { home: 'Netherlands', away: 'Morocco', date: 'Jun 29, 9:00 PM', stadium: 'Estadio BBVA, Guadalupe' },
+            { home: 'Brazil', away: 'Japan', date: 'Jun 29, 1:00 PM', stadium: 'NRG Stadium, Houston' },
+            { home: 'France', away: 'Sweden', date: 'Jun 30, 5:00 PM', stadium: 'MetLife Stadium, East Rutherford' },
+            { home: 'Ivory Coast', away: 'Norway', date: 'Jun 30, 1:00 PM', stadium: 'AT&T Stadium, Arlington' },
+            { home: 'Mexico', away: 'Ecuador', date: 'Jun 30, 9:00 PM', stadium: 'Estadio Azteca, Mexico City' },
+            { home: 'England', away: 'DR Congo', date: 'Jul 1, 12:00 PM', stadium: 'Mercedes-Benz Stadium, Atlanta' },
+            { home: 'USA', away: 'Bosnia and Herzegovina', date: 'Jul 1, 8:00 PM', stadium: "Levi's Stadium, Santa Clara" },
+            { home: 'Belgium', away: 'Senegal', date: 'Jul 1, 4:00 PM', stadium: 'Lumen Field, Seattle' },
+            { home: 'Portugal', away: 'Croatia', date: 'Jul 2, 7:00 PM', stadium: 'BMO Field, Toronto' },
+            { home: 'Spain', away: 'Austria', date: 'Jul 2, 3:00 PM', stadium: 'SoFi Stadium, Los Angeles' },
+            { home: 'Switzerland', away: 'Algeria', date: 'Jul 2, 11:00 PM', stadium: 'BC Place, Vancouver' },
+            { home: 'Argentina', away: 'Cape Verde', date: 'Jul 3, 6:00 PM', stadium: 'Hard Rock Stadium, Miami Gardens' },
+            { home: 'Colombia', away: 'Ghana', date: 'Jul 3, 9:30 PM', stadium: 'Arrowhead Stadium, Kansas City' },
+            { home: 'Australia', away: 'Egypt', date: 'Jul 3, 2:00 PM', stadium: 'AT&T Stadium, Arlington' }
         ];
 
-        // --------------------------------------------------------------
-        // 3. STADIUMS & SCHEDULE (actual venues and dates)
-        // --------------------------------------------------------------
-        const R32_SCHEDULE = [
-            { date: 'Jun 28, 3:00 PM', stadium: 'SoFi Stadium, Inglewood' },
-            { date: 'Jun 29, 1:00 PM', stadium: 'NRG Stadium, Houston' },
-            { date: 'Jun 29, 4:30 PM', stadium: 'Gillette Stadium, Foxborough' },
-            { date: 'Jun 29, 9:00 PM', stadium: 'Estadio BBVA, Guadalupe' },
-            { date: 'Jun 30, 1:00 PM', stadium: 'AT&T Stadium, Arlington' },
-            { date: 'Jun 30, 5:00 PM', stadium: 'MetLife Stadium, East Rutherford' },
-            { date: 'Jun 30, 9:00 PM', stadium: 'Estadio Azteca, Mexico City' },
-            { date: 'Jul 1, 12:00 PM', stadium: 'Mercedes-Benz Stadium, Atlanta' },
-            { date: 'Jul 1, 4:00 PM', stadium: 'Lumen Field, Seattle' },
-            { date: 'Jul 1, 8:00 PM', stadium: "Levi's Stadium, Santa Clara" },
-            { date: 'Jul 2, 3:00 PM', stadium: 'SoFi Stadium, Inglewood' },
-            { date: 'Jul 2, 7:00 PM', stadium: 'BMO Field, Toronto' },
-            { date: 'Jul 2, 11:00 PM', stadium: 'BC Place, Vancouver' },
-            { date: 'Jul 3, 2:00 PM', stadium: 'AT&T Stadium, Arlington' },
-            { date: 'Jul 3, 6:00 PM', stadium: 'Hard Rock Stadium, Miami Gardens' },
-            { date: 'Jul 3, 9:30 PM', stadium: 'Arrowhead Stadium, Kansas City' }
+        // ================================================================
+        // 3. ROUND OF 16 – 8 matches (Match 89–96)
+        // ================================================================
+        const R16_SOURCES = [
+            [0, 2], // 89: W73 vs W75
+            [1, 4], // 90: W74 vs W77
+            [3, 5], // 91: W76 vs W78
+            [6, 7], // 92: W79 vs W80
+            [10, 11], // 93: W83 vs W84
+            [8, 9], // 94: W81 vs W82
+            [13, 15], // 95: W86 vs W88
+            [12, 14] // 96: W85 vs W87
         ];
 
-        // Round of 16 schedule (index matches R32 winner pairs)
         const R16_SCHEDULE = [
             { date: 'Jul 4, 1:00 PM', stadium: 'Gillette Stadium, Foxborough' },
             { date: 'Jul 4, 5:00 PM', stadium: 'MetLife Stadium, East Rutherford' },
-            { date: 'Jul 5, 4:00 PM', stadium: 'SoFi Stadium, Inglewood' },
+            { date: 'Jul 5, 4:00 PM', stadium: 'SoFi Stadium, Los Angeles' },
             { date: 'Jul 5, 8:00 PM', stadium: 'NRG Stadium, Houston' },
             { date: 'Jul 6, 3:00 PM', stadium: "Levi's Stadium, Santa Clara" },
             { date: 'Jul 6, 8:00 PM', stadium: 'Lumen Field, Seattle' },
@@ -308,35 +300,49 @@
             { date: 'Jul 7, 4:00 PM', stadium: 'Estadio Azteca, Mexico City' }
         ];
 
-        // Quarter-finals schedule
+        // ================================================================
+        // 4. QUARTER-FINALS – 4 matches (Match 97–100)
+        // ================================================================
+        const QF_SOURCES = [
+            [0, 1], // 97: W89 vs W90
+            [4, 5], // 98: W93 vs W94
+            [2, 3], // 99: W91 vs W92
+            [6, 7] // 100: W95 vs W96
+        ];
+
         const QF_SCHEDULE = [
             { date: 'Jul 9, 4:00 PM', stadium: 'Gillette Stadium, Foxborough' },
-            { date: 'Jul 10, 3:00 PM', stadium: 'SoFi Stadium, Inglewood' },
+            { date: 'Jul 10, 3:00 PM', stadium: 'SoFi Stadium, Los Angeles' },
             { date: 'Jul 11, 5:00 PM', stadium: 'MetLife Stadium, East Rutherford' },
             { date: 'Jul 11, 9:00 PM', stadium: 'NRG Stadium, Houston' }
         ];
 
-        // Semi-finals schedule
+        // ================================================================
+        // 5. SEMI-FINALS – 2 matches (Match 101–102)
+        // ================================================================
+        const SF_SOURCES = [
+            [0, 1], // 101: W97 vs W98
+            [2, 3] // 102: W99 vs W100
+        ];
+
         const SF_SCHEDULE = [
             { date: 'Jul 14, 3:00 PM', stadium: 'AT&T Stadium, Arlington' },
             { date: 'Jul 15, 3:00 PM', stadium: 'Mercedes-Benz Stadium, Atlanta' }
         ];
 
-        // Third place & Final
+        // ================================================================
+        // 6. THIRD PLACE & FINAL
+        // ================================================================
         const THIRD_PLACE = { date: 'Jul 18, 5:00 PM', stadium: 'Hard Rock Stadium, Miami Gardens' };
         const FINAL = { date: 'Jul 19, 3:00 PM', stadium: 'MetLife Stadium, East Rutherford' };
 
-        // Helper: get team object by name
-        function getTeamByName(name) {
-            return TEAMS.find(t => t.name === name);
-        }
-
-        // --------------------------------------------------------------
-        // 4. TOURNAMENT STATE
-        // --------------------------------------------------------------
+        // ================================================================
+        // 7. BUILD TOURNAMENT STATE
+        // ================================================================
         let tournament = null;
 
-        function initTournament() {
+        function buildTournament() {
+            // rounds: 0=R32, 1=R16, 2=QF, 3=SF, 4=Third, 5=Final
             const rounds = [
                 { name: 'Round of 32', matches: [] },
                 { name: 'Round of 16', matches: [] },
@@ -346,94 +352,98 @@
                 { name: 'Final', matches: [] }
             ];
 
-            // Round 1: Round of 32 (16 matches)
+            // -- Round of 32 (16 matches) --
             for (let i = 0; i < 16; i++) {
-                const home = getTeamByName(R32_MATCHUPS[i].home);
-                const away = getTeamByName(R32_MATCHUPS[i].away);
+                const d = R32_DATA[i];
                 rounds[0].matches.push({
-                    id: `r1m${i}`,
-                    home: home,
-                    away: away,
+                    id: `r32_${i}`,
+                    home: getTeam(d.home),
+                    away: getTeam(d.away),
                     winner: null,
-                    date: R32_SCHEDULE[i].date,
-                    stadium: R32_SCHEDULE[i].stadium,
+                    date: d.date,
+                    stadium: d.stadium,
                     roundIdx: 0,
                     matchIdx: i
                 });
             }
 
-            // Round 2: Round of 16 (8 matches)
+            // -- Round of 16 (8 matches) --
             for (let i = 0; i < 8; i++) {
                 rounds[1].matches.push({
-                    id: `r2m${i}`,
+                    id: `r16_${i}`,
                     home: null,
                     away: null,
                     winner: null,
                     date: R16_SCHEDULE[i].date,
                     stadium: R16_SCHEDULE[i].stadium,
                     roundIdx: 1,
-                    matchIdx: i
+                    matchIdx: i,
+                    sources: R16_SOURCES[i]
                 });
             }
 
-            // Round 3: Quarter-finals (4 matches)
+            // -- Quarter-finals (4 matches) --
             for (let i = 0; i < 4; i++) {
                 rounds[2].matches.push({
-                    id: `r3m${i}`,
+                    id: `qf_${i}`,
                     home: null,
                     away: null,
                     winner: null,
                     date: QF_SCHEDULE[i].date,
                     stadium: QF_SCHEDULE[i].stadium,
                     roundIdx: 2,
-                    matchIdx: i
+                    matchIdx: i,
+                    sources: QF_SOURCES[i]
                 });
             }
 
-            // Round 4: Semi-finals (2 matches)
+            // -- Semi-finals (2 matches) --
             for (let i = 0; i < 2; i++) {
                 rounds[3].matches.push({
-                    id: `r4m${i}`,
+                    id: `sf_${i}`,
                     home: null,
                     away: null,
                     winner: null,
                     date: SF_SCHEDULE[i].date,
                     stadium: SF_SCHEDULE[i].stadium,
                     roundIdx: 3,
-                    matchIdx: i
+                    matchIdx: i,
+                    sources: SF_SOURCES[i]
                 });
             }
 
-            // Round 5: Third Place (1 match)
+            // -- Third Place (1 match) --
             rounds[4].matches.push({
-                id: 'r5m0',
+                id: 'third',
                 home: null,
                 away: null,
                 winner: null,
                 date: THIRD_PLACE.date,
                 stadium: THIRD_PLACE.stadium,
                 roundIdx: 4,
-                matchIdx: 0
+                matchIdx: 0,
+                sources: null
             });
 
-            // Round 6: Final (1 match)
+            // -- Final (1 match) --
             rounds[5].matches.push({
-                id: 'r6m0',
+                id: 'final',
                 home: null,
                 away: null,
                 winner: null,
                 date: FINAL.date,
                 stadium: FINAL.stadium,
                 roundIdx: 5,
-                matchIdx: 0
+                matchIdx: 0,
+                sources: null
             });
 
             return rounds;
         }
 
-        // --------------------------------------------------------------
-        // 5. RENDER
-        // --------------------------------------------------------------
+        // ================================================================
+        // 8. RENDER
+        // ================================================================
         function renderTournament() {
             const container = document.getElementById('tournament');
             container.innerHTML = '';
@@ -450,16 +460,13 @@
                     const matchDiv = document.createElement('div');
                     matchDiv.className = 'match';
 
-                    // Home team
+                    // Home
                     const homeDiv = document.createElement('div');
                     homeDiv.className = 'team home';
                     if (match.home) {
                         homeDiv.innerHTML = `${match.home.flag} ${match.home.name}`;
-                        if (match.winner === match.home) {
-                            homeDiv.classList.add('winner');
-                        } else if (match.winner) {
-                            homeDiv.classList.add('loser');
-                        }
+                        if (match.winner === match.home) homeDiv.classList.add('winner');
+                        else if (match.winner) homeDiv.classList.add('loser');
                         if (!match.winner && match.home && match.away) {
                             homeDiv.style.cursor = 'pointer';
                             homeDiv.addEventListener('click', () => selectWinner(rIdx, mIdx, 'home'));
@@ -469,16 +476,13 @@
                         homeDiv.classList.add('tbd');
                     }
 
-                    // Away team
+                    // Away
                     const awayDiv = document.createElement('div');
                     awayDiv.className = 'team away';
                     if (match.away) {
                         awayDiv.innerHTML = `${match.away.flag} ${match.away.name}`;
-                        if (match.winner === match.away) {
-                            awayDiv.classList.add('winner');
-                        } else if (match.winner) {
-                            awayDiv.classList.add('loser');
-                        }
+                        if (match.winner === match.away) awayDiv.classList.add('winner');
+                        else if (match.winner) awayDiv.classList.add('loser');
                         if (!match.winner && match.home && match.away) {
                             awayDiv.style.cursor = 'pointer';
                             awayDiv.addEventListener('click', () => selectWinner(rIdx, mIdx, 'away'));
@@ -488,7 +492,7 @@
                         awayDiv.classList.add('tbd');
                     }
 
-                    // Match info (date & stadium)
+                    // Info
                     const infoDiv = document.createElement('div');
                     infoDiv.className = 'match-info';
                     infoDiv.textContent = `${match.date} | ${match.stadium}`;
@@ -503,9 +507,9 @@
             });
         }
 
-        // --------------------------------------------------------------
-        // 6. SELECT WINNER
-        // --------------------------------------------------------------
+        // ================================================================
+        // 9. SELECT WINNER & PROPAGATE
+        // ================================================================
         function selectWinner(roundIdx, matchIdx, side) {
             const match = tournament[roundIdx].matches[matchIdx];
             if (match.winner) return;
@@ -515,53 +519,47 @@
 
             match.winner = winner;
 
-            // Propagate to next round
+            // --- Propagate to next round ---
             if (roundIdx === 0) {
-                // Round of 32 -> Round of 16
-                const nextRound = tournament[1];
-                const nextMatchIdx = Math.floor(matchIdx / 2);
-                const nextMatch = nextRound.matches[nextMatchIdx];
-                if (matchIdx % 2 === 0) {
-                    nextMatch.home = winner;
-                } else {
-                    nextMatch.away = winner;
+                // R32 -> R16
+                const r16 = tournament[1];
+                for (let i = 0; i < r16.matches.length; i++) {
+                    const m = r16.matches[i];
+                    if (!m.sources) continue;
+                    if (m.sources[0] === matchIdx) m.home = winner;
+                    if (m.sources[1] === matchIdx) m.away = winner;
                 }
             } else if (roundIdx === 1) {
-                // Round of 16 -> Quarter-finals
-                const nextRound = tournament[2];
-                const nextMatchIdx = Math.floor(matchIdx / 2);
-                const nextMatch = nextRound.matches[nextMatchIdx];
-                if (matchIdx % 2 === 0) {
-                    nextMatch.home = winner;
-                } else {
-                    nextMatch.away = winner;
+                // R16 -> QF
+                const qf = tournament[2];
+                for (let i = 0; i < qf.matches.length; i++) {
+                    const m = qf.matches[i];
+                    if (!m.sources) continue;
+                    if (m.sources[0] === matchIdx) m.home = winner;
+                    if (m.sources[1] === matchIdx) m.away = winner;
                 }
             } else if (roundIdx === 2) {
-                // Quarter-finals -> Semi-finals
-                const nextRound = tournament[3];
-                const nextMatchIdx = Math.floor(matchIdx / 2);
-                const nextMatch = nextRound.matches[nextMatchIdx];
-                if (matchIdx % 2 === 0) {
-                    nextMatch.home = winner;
-                } else {
-                    nextMatch.away = winner;
+                // QF -> SF
+                const sf = tournament[3];
+                for (let i = 0; i < sf.matches.length; i++) {
+                    const m = sf.matches[i];
+                    if (!m.sources) continue;
+                    if (m.sources[0] === matchIdx) m.home = winner;
+                    if (m.sources[1] === matchIdx) m.away = winner;
                 }
             } else if (roundIdx === 3) {
-                // Semi-finals -> Final & Third Place
-                // Winner goes to Final
+                // SF -> Final & Third Place
                 const finalMatch = tournament[5].matches[0];
+                const thirdMatch = tournament[4].matches[0];
+
                 if (matchIdx === 0) {
                     finalMatch.home = winner;
+                    const loser = side === 'home' ? match.away : match.home;
+                    thirdMatch.home = loser;
                 } else {
                     finalMatch.away = winner;
-                }
-                // Loser goes to Third Place
-                const loser = side === 'home' ? match.away : match.home;
-                const thirdPlaceMatch = tournament[4].matches[0];
-                if (matchIdx === 0) {
-                    thirdPlaceMatch.home = loser;
-                } else {
-                    thirdPlaceMatch.away = loser;
+                    const loser = side === 'home' ? match.away : match.home;
+                    thirdMatch.away = loser;
                 }
             } else if (roundIdx === 4) {
                 // Third Place finished
@@ -569,7 +567,7 @@
                     alert(`🥉 Third Place: ${winner.flag} ${winner.name} 🥉`);
                 }, 100);
             } else if (roundIdx === 5) {
-                // Final finished – show champion
+                // Final finished
                 setTimeout(() => {
                     alert(`🏆 Champion: ${winner.flag} ${winner.name} 🏆`);
                 }, 100);
@@ -578,19 +576,31 @@
             renderTournament();
         }
 
-        // --------------------------------------------------------------
-        // 7. THEME TOGGLE
-        // --------------------------------------------------------------
+        // ================================================================
+        // 10. RESET FUNCTION
+        // ================================================================
+        function resetTournament() {
+            if (confirm('Are you sure you want to reset the entire bracket? All progress will be lost.')) {
+                tournament = buildTournament();
+                renderTournament();
+            }
+        }
+
+        // ================================================================
+        // 11. THEME TOGGLE
+        // ================================================================
         document.getElementById('theme-toggle').addEventListener('click', function() {
             document.body.classList.toggle('light');
             this.textContent = document.body.classList.contains('light') ? 'Dark Mode' : 'Light Mode';
         });
 
-        // --------------------------------------------------------------
-        // 8. INIT & SERVICE WORKER REGISTRATION
-        // --------------------------------------------------------------
-        tournament = initTournament();
+        // ================================================================
+        // 12. INIT & EVENT LISTENERS
+        // ================================================================
+        tournament = buildTournament();
         renderTournament();
+
+        document.getElementById('reset-button').addEventListener('click', resetTournament);
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
